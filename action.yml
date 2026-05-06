@@ -1,0 +1,95 @@
+name: Sign Windows Files
+description: Windows action which signs specified files using powershell
+author: acornbytes
+
+branding:
+  icon: "lock"
+  color: "purple"
+
+inputs:
+  cert_base64:
+    description: The Base64-encoded representation of the PFX certificate.
+    required: false
+  cert_path:
+    description: The path to the PFX certificate file. Takes priority over cert_base64
+    required: false
+  cert_password:
+    description: Password for the certificate, if required.
+    required: false
+  folder:
+    description: Change to folder before sign files, globs relative to the folder
+    required: false
+    default: ""
+  sign_globs:
+    description: Paths (globs) of the files to sign (comma-separated)
+    required: true
+    default: '*.exe,*.dll'
+  hash:
+    description: File digest algorithm (e.g., SHA256)
+    required: false
+    default: SHA256
+  timestamp_server:
+    description: "Timestamp server URL"
+    required: false
+    default: http://timestamp.sectigo.com
+
+runs:
+  using: "composite"
+  steps:
+    - name: Import PowerShell Module
+      shell: pwsh
+      run: |
+        Install-Module -Name 'Microsoft.PowerShell.Security' -Force -AllowClobber -Scope CurrentUser -Verbose
+        Import-Module -Name 'Microsoft.PowerShell.Security' -Verbose
+
+    - name: Sign Files
+      shell: pwsh
+      run: |
+        $certificatePath = "${{ inputs.cert_path }}"
+        if($certificatePath) {
+          Write-Host "Using certificate file: $certificatePath"
+          $certificateExists = Test-Path -Path $certificatePath
+          if (!$certificateExists) {
+            throw "Specified certificate file '$certificatePath' does not exist."
+          }
+        } else {
+          Write-Host "No certificate file provided, using base64 certificate data."
+          $certBase64 = "${{ inputs.cert_base64 }}"
+          if(!$certBase64) {
+            throw "No certificate data provided."
+          }
+          $certBytes = [System.Convert]::FromBase64String($certBase64)
+          $certificatePath = Join-Path $env:RUNNER_TEMP 'code-signing-certificate.pfx'
+          [System.IO.File]::WriteAllBytes($certificatePath, $certBytes)
+        }
+        Write-Host "Using certificate '$certificatePath' for binary signing"
+
+        if($folder) {
+          $folderExists = Test-Path -Path $folder
+          if (!$folderExists) {
+            throw "Specified folder '$folder' does not exist."
+          }
+          Set-Location -Path $folder
+        }
+
+        $pathGlobs = '${{ inputs.sign_globs }}' -Split ','
+        $pathGlobsCount = $pathGlobs.Count
+        Write-Host "$pathGlobsCount total glob paths to process."
+
+        if($pathGlobsCount -eq 0) {
+          throw "No paths found"
+        }
+
+        $signCertificate = Get-PfxCertificate -FilePath "$certificatePath" -Password (ConvertTo-SecureString -String ${{ inputs.cert_password }} -AsPlainText -Force)
+
+        foreach ($pathGlob in $pathGlobsCount) {
+          Write-Host "Analysing found files for path '$pathGlob'"
+          $foundPaths = Get-ChildItem -Path "$pathGlob" -Verbose -Recurse
+          $foundPathsCount = $foundPaths.Count
+          Write-Host "$foundPathsCount paths found."
+          Write-Host "$foundPaths"
+          foreach($foundPath in $foundPaths){
+            Write-Host "Running sign operation against: '$($foundPath.FullName)'"
+            Set-AuthenticodeSignature -Certificate $signCertificate -FilePath "$($foundPath.FullName)" -IncludeChain All -TimestampServer ${{ inputs.timestamp_server }} -HashAlgorithm ${{ inputs.hash }} -Force -Verbose
+          }
+        }
