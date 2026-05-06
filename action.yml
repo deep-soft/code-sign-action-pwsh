@@ -19,7 +19,7 @@ inputs:
   folder:
     description: Change to folder before sign files, globs relative to the folder
     required: false
-    default: ".\"
+    default: ""
   recursive:
     description: 'Recursively search for supported files.'
     type: boolean
@@ -36,12 +36,12 @@ inputs:
   timestamp_server:
     description: "Timestamp server URL"
     required: false
-    default: 'http://timestamp.sectigo.com'
+    default: "http://timestamp.sectigo.com"
 
 runs:
   using: "composite"
   steps:
-    - name: print inputs (1)
+    - name: print inputs
       shell: pwsh
       run: |
         $folder           = "${{ inputs.folder           }}"
