@@ -28,7 +28,7 @@ inputs:
   sign_globs:
     description: Paths (globs) of the files to sign (comma separated)
     required: true
-    default: '*.exe,*.dll'
+    default: '*.exe,*.dll,*.sys'
   hash:
     description: File digest algorithm (e.g., SHA256)
     required: false
@@ -86,18 +86,6 @@ runs:
           [System.IO.File]::WriteAllBytes($certificatePath, $certBytes)
         }
         Write-Host "Using certificate $certificatePath for binary signing"
-
-        if($folder) {
-          $folderExists = Test-Path -Path $folder
-          if (!$folderExists) {
-            throw "Specified folder '$folder' does not exist."
-          } else {
-            Set-Location -Path $folder
-            Write-Host "'$folder' found."
-            $currentFolder = Get-Location
-            Write-Host "current folder: '$currentFolder'"
-          }
-        }
 
         $pathGlobs = '${{ inputs.sign_globs }}' -Split ','
         $pathGlobsCount = $pathGlobs.Count
