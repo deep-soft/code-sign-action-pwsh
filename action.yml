@@ -44,7 +44,7 @@ runs:
       continue-on-error: true
       shell: pwsh
       run: |
-        Install-Module -Name 'Microsoft.PowerShell.Security' -Force -AllowClobber -Scope CurrentUser -Verbose -Repository https://www.nuget.org/packages/Microsoft.PowerShell.Security/
+        Install-Module -Name 'Microsoft.PowerShell.Security' -Force -AllowClobber -Scope CurrentUser -Verbose -Repository https://www.nuget.org/packages/
 
     - name: Import PowerShell Module Microsoft.PowerShell.Security
       shell: pwsh
@@ -77,8 +77,13 @@ runs:
           $folderExists = Test-Path -Path $folder
           if (!$folderExists) {
             throw "Specified folder '$folder' does not exist."
+          } else
+          {
+            Set-Location -Path $folder
+            Write-Host "'$folder' found."
+            $currentFolder = Get-Location
+            Write-Host "current folder: '$currentFolder'"
           }
-          Set-Location -Path $folder
         }
 
         $pathGlobs = '${{ inputs.sign_globs }}' -Split ','
