@@ -97,7 +97,7 @@ runs:
 
         $signCertificate = Get-PfxCertificate -FilePath $certificatePath -Password (ConvertTo-SecureString -String ${{ inputs.cert_password }} -AsPlainText -Force)
 
-        foreach ($pathGlob in $pathGlobsCount) {
+        foreach ($pathGlob in $pathGlobs) {
           Write-Host "Found: '$pathGlob'"
           if($recursive) {
             $foundPaths = Get-ChildItem -Path "$pathGlob" -Verbose -Recurse
@@ -114,7 +114,7 @@ runs:
           }
         }
 
-        foreach ($pathGlob in $pathGlobsCount) {
+        foreach ($pathGlob in $pathGlobs) {
           Write-Host "Analysing found files for path '$pathGlob'"
           $foundPaths = Get-ChildItem -Path "$pathGlob" -Verbose -Recurse
           $foundPathsCount = $foundPaths.Count
