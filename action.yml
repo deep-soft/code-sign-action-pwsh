@@ -122,7 +122,7 @@ runs:
           Write-Host "Analysing found files for path '$pathGlob'"
           if($recursive) {
             $foundPaths = Get-ChildItem -Path "$pathGlob" -Verbose -Recurse
-            Write-Host "path:$foundPaths:"
+            Write-Host "path: $foundPaths"
           } else
           {
             $foundPaths = Get-ChildItem -Path "$pathGlob" -Verbose
