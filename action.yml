@@ -41,12 +41,22 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: inputs
+    - name: print inputs (1)
       shell: pwsh
       run: |
-        Write-Host "folder:    '$folder'"
-        Write-Host "hash:      '$hash'"
-        Write-Host "recursive: '$recursive'"
+        $folder    = ${{ inputs.folder    }}
+        $recursive = ${{ inputs.recursive }}
+        $hash      = ${{ inputs.hash      }}
+        Write-Host "folder:    $folder"
+        Write-Host "hash:      $hash"
+        Write-Host "recursive: $recursive"
+
+    - name: print inputs (2)
+      shell: pwsh
+      run: |
+        Write-Host "folder:    $folder"
+        Write-Host "hash:      $hash"
+        Write-Host "recursive: $recursive"
 
 #    - name: Install PowerShell Module Microsoft.PowerShell.Security
 #      continue-on-error: true
@@ -62,6 +72,10 @@ runs:
     - name: Sign Files
       shell: pwsh
       run: |
+        $folder    = ${{ inputs.folder    }}
+        $recursive = ${{ inputs.recursive }}
+        $hash      = ${{ inputs.hash      }}
+        
         $certificatePath = "${{ inputs.cert_path }}"
         if($certificatePath) {
           Write-Host "Using certificate file: $certificatePath"
@@ -88,9 +102,9 @@ runs:
           } else
           {
             Set-Location -Path $folder
-            Write-Host "'$folder' found."
+            Write-Host "$folder found."
             $currentFolder = Get-Location
-            Write-Host "current folder: '$currentFolder'"
+            Write-Host "current folder: $currentFolder"
           }
         }
 
@@ -108,9 +122,11 @@ runs:
           Write-Host "Analysing found files for path '$pathGlob'"
           if($recursive) {
             $foundPaths = Get-ChildItem -Path "$pathGlob" -Verbose -Recurse
+            Write-Host "path:$foundPaths:"
           } else
           {
             $foundPaths = Get-ChildItem -Path "$pathGlob" -Verbose
+            Write-Host "path:$foundPaths:"
           }
           $foundPathsCount = $foundPaths.Count
           Write-Host "$foundPathsCount paths found."
