@@ -19,7 +19,7 @@ inputs:
   folder:
     description: Change to folder before sign files, globs relative to the folder
     required: false
-    default: ""
+    default: ".\"
   recursive:
     description: 'Recursively search for supported files.'
     type: boolean
@@ -36,7 +36,8 @@ inputs:
   timestamp_server:
     description: "Timestamp server URL"
     required: false
-    default: 'http://timestamp.sectigo.com'
+
+#    default: 'http://timestamp.sectigo.com'
 
 runs:
   using: "composite"
@@ -52,12 +53,6 @@ runs:
         Write-Host "hash             = $hash"
         Write-Host "recursive        = $recursive"
         Write-Host "timestamp_server = $timestamp_server"
-
-#    - name: Install PowerShell Module Microsoft.PowerShell.Security
-#      continue-on-error: true
-#      shell: pwsh
-#      run: |
-#        Install-Module -Name 'Microsoft.PowerShell.Security' -Force -AllowClobber -Scope CurrentUser -Verbose -Repository https://www.nuget.org/packages/
 
     - name: Import PowerShell Module Microsoft.PowerShell.Security
       shell: pwsh
@@ -77,7 +72,7 @@ runs:
           Write-Host "Using certificate file: '$certificatePath'"
           $certificateExists = Test-Path -Path $certificatePath
           if (!$certificateExists) {
-            throw "Specified certificate file $certificatePath does not exist."
+            throw "Specified certificate file '$certificatePath' does not exist."
           }
         } else {
           No certificate file provided, using base64 certificate data."
@@ -89,16 +84,15 @@ runs:
           $certificatePath = Join-Path $env:RUNNER_TEMP 'code-signing-certificate.pfx'
           [System.IO.File]::WriteAllBytes($certificatePath, $certBytes)
         }
-        Write-Host "Using certificate $certificatePath for binary signing"
+        Write-Host "Using certificate '$certificatePath' for binary signing"
 
         if($folder) {
           $folderExists = Test-Path -Path $folder
           if (!$folderExists) {
             throw "Specified folder '$folder' does not exist."
-          } else
-          {
+          } else {
             Set-Location -Path $folder
-            Write-Host "'$folder' found."
+            Write-Host "'$folder' found"
             $currentFolder = Get-Location
             Write-Host "current folder: '$currentFolder'"
           }
@@ -106,7 +100,7 @@ runs:
 
         $pathGlobs = '${{ inputs.sign_globs }}' -Split ','
         $pathGlobsCount = $pathGlobs.Count
-        Write-Host "'$pathGlobsCount' total glob paths to process."
+        Write-Host "'$pathGlobsCount' total glob paths to process"
 
         if($pathGlobsCount -eq 0) {
           throw "No paths found"
@@ -119,13 +113,11 @@ runs:
           if($recursive) {
             $foundPaths = Get-ChildItem -Path "$pathGlob" -Verbose -Recurse
             Write-Host "path: '$foundPaths'"
-          } else
-          {
+          } else {
             $foundPaths = Get-ChildItem -Path "$pathGlob" -Verbose
             Write-Host "path: '$foundPaths'"
           }
           $foundPathsCount = $foundPaths.Count
-          Write-Host "count: '$foundPathsCount'"
           foreach($foundPath in $foundPaths) {
             Set-AuthenticodeSignature -Certificate $signCertificate -FilePath $($foundPath.FullName) -IncludeChain All -TimestampServer $timestamp_server -HashAlgorithm $hash -Force -Verbose
           }
