@@ -36,7 +36,7 @@ inputs:
   timestamp_server:
     description: "Timestamp server URL"
     required: false
-    default: "http://timestamp.sectigo.com"
+    default: 'http://timestamp.sectigo.com'
 
 runs:
   using: "composite"
@@ -77,7 +77,7 @@ runs:
           Write-Host "Using certificate file: $certificatePath"
           $certificateExists = Test-Path -Path $certificatePath
           if (!$certificateExists) {
-            throw "Specified certificate file '$certificatePath' does not exist."
+            throw "Specified certificate file $certificatePath does not exist."
           }
         } else {
           No certificate file provided, using base64 certificate data."
@@ -89,7 +89,7 @@ runs:
           $certificatePath = Join-Path $env:RUNNER_TEMP 'code-signing-certificate.pfx'
           [System.IO.File]::WriteAllBytes($certificatePath, $certBytes)
         }
-        Write-Host "Using certificate '$certificatePath' for binary signing"
+        Write-Host "Using certificate $certificatePath for binary signing"
 
         if($folder) {
           $folderExists = Test-Path -Path $folder
@@ -112,7 +112,7 @@ runs:
           throw "No paths found"
         }
 
-        $signCertificate = Get-PfxCertificate -FilePath "$certificatePath" -Password (ConvertTo-SecureString -String ${{ inputs.cert_password }} -AsPlainText -Force)
+        $signCertificate = Get-PfxCertificate -FilePath $certificatePath -Password (ConvertTo-SecureString -String ${{ inputs.cert_password }} -AsPlainText -Force)
 
         foreach ($pathGlob in $pathGlobsCount) {
           Write-Host "Found: $pathGlob"
@@ -127,8 +127,6 @@ runs:
           $foundPathsCount = $foundPaths.Count
           Write-Host "count: $foundPathsCount"
           foreach($foundPath in $foundPaths) {
-            Write-Host "sign: $foundPath.FullName"
-            Write-Host "Set-AuthenticodeSignature -Certificate $signCertificate -FilePath $($foundPath.FullName) -IncludeChain All -TimestampServer $timestamp_server -HashAlgorithm $hash -Force -Verbose"
             Set-AuthenticodeSignature -Certificate $signCertificate -FilePath $($foundPath.FullName) -IncludeChain All -TimestampServer $timestamp_server -HashAlgorithm $hash -Force -Verbose
           }
         }
