@@ -36,7 +36,7 @@ inputs:
   timestamp_server:
     description: "Timestamp server URL"
     required: false
-    default: http://timestamp.sectigo.com
+    default: "http://timestamp.sectigo.com"
 
 runs:
   using: "composite"
@@ -130,7 +130,7 @@ runs:
           }
           $foundPathsCount = $foundPaths.Count
           Write-Host "$foundPathsCount paths found."
-          Write-Host "$foundPaths"
+          Write-Host "path: $foundPaths"
           foreach($foundPath in $foundPaths){
             Write-Host "Running sign operation against: '$($foundPath.FullName)'"
             Set-AuthenticodeSignature -Certificate $signCertificate -FilePath "$($foundPath.FullName)" -IncludeChain All -TimestampServer ${{ inputs.timestamp_server }} -HashAlgorithm ${{ inputs.hash }} -Force -Verbose
