@@ -125,3 +125,15 @@ runs:
             Set-AuthenticodeSignature -Certificate $signCertificate -FilePath "$($foundPath.FullName)" -IncludeChain All -TimestampServer $timestamp_server -HashAlgorithm $hash -Force -Verbose
           }
         }
+
+        foreach ($pathGlob in $pathGlobsCount) {
+          Write-Host "Analysing found files for path '$pathGlob'"
+          $foundPaths = Get-ChildItem -Path "$pathGlob" -Verbose -Recurse
+          $foundPathsCount = $foundPaths.Count
+          Write-Host "$foundPathsCount paths found."
+          Write-Host "$foundPaths"
+          foreach($foundPath in $foundPaths){
+            Write-Host "Running sign operation against: '$($foundPath.FullName)'"
+            Set-AuthenticodeSignature -Certificate $signCertificate -FilePath "$($foundPath.FullName)" -IncludeChain All -TimestampServer ${{ inputs.timestamp_server }} -HashAlgorithm ${{ inputs.hash }} -Force -Verbose
+          }
+        }
