@@ -36,8 +36,7 @@ inputs:
   timestamp_server:
     description: "Timestamp server URL"
     required: false
-
-#    default: 'http://timestamp.sectigo.com'
+    default: 'http://timestamp.sectigo.com'
 
 runs:
   using: "composite"
