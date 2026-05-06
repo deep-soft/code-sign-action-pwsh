@@ -44,14 +44,15 @@ runs:
     - name: inputs
       shell: pwsh
       run: |
-        Write-Host "folder: '$folder"
-        Write-Host "hash: '$hash"
-        Write-Host "recursive: '$recursive"
-    - name: Install PowerShell Module Microsoft.PowerShell.Security
-      continue-on-error: true
-      shell: pwsh
-      run: |
-        Install-Module -Name 'Microsoft.PowerShell.Security' -Force -AllowClobber -Scope CurrentUser -Verbose -Repository https://www.nuget.org/packages/
+        Write-Host "folder:    '$folder'"
+        Write-Host "hash:      '$hash'"
+        Write-Host "recursive: '$recursive'"
+
+#    - name: Install PowerShell Module Microsoft.PowerShell.Security
+#      continue-on-error: true
+#      shell: pwsh
+#      run: |
+#        Install-Module -Name 'Microsoft.PowerShell.Security' -Force -AllowClobber -Scope CurrentUser -Verbose -Repository https://www.nuget.org/packages/
 
     - name: Import PowerShell Module Microsoft.PowerShell.Security
       shell: pwsh
