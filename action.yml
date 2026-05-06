@@ -44,9 +44,9 @@ runs:
     - name: print inputs (1)
       shell: pwsh
       run: |
-        $folder    = ${{ inputs.folder    }}
-        $recursive = ${{ inputs.recursive }}
-        $hash      = ${{ inputs.hash      }}
+        $folder    = "${{ inputs.folder    }}"
+        $recursive = "${{ inputs.recursive }}"
+        $hash      = "${{ inputs.hash      }}"
         Write-Host "folder:    $folder"
         Write-Host "hash:      $hash"
         Write-Host "recursive: $recursive"
@@ -72,9 +72,9 @@ runs:
     - name: Sign Files
       shell: pwsh
       run: |
-        $folder    = ${{ inputs.folder    }}
-        $recursive = ${{ inputs.recursive }}
-        $hash      = ${{ inputs.hash      }}
+        $folder    = "${{ inputs.folder    }}"
+        $recursive = "${{ inputs.recursive }}"
+        $hash      = "${{ inputs.hash      }}"
         
         $certificatePath = "${{ inputs.cert_path }}"
         if($certificatePath) {
