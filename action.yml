@@ -53,12 +53,6 @@ runs:
         Write-Host "recursive        = $recursive"
         Write-Host "timestamp_server = $timestamp_server"
 
-#    - name: Install PowerShell Module Microsoft.PowerShell.Security
-#      continue-on-error: true
-#      shell: pwsh
-#      run: |
-#        Install-Module -Name 'Microsoft.PowerShell.Security' -Force -AllowClobber -Scope CurrentUser -Verbose -Repository https://www.nuget.org/packages/
-
     - name: Import PowerShell Module Microsoft.PowerShell.Security
       shell: pwsh
       run: |
@@ -71,6 +65,7 @@ runs:
         $recursive        = "${{ inputs.recursive        }}"
         $hash             = "${{ inputs.hash             }}"
         $timestamp_server = "${{ inputs.timestamp_server }}"
+
         $certificatePath = "${{ inputs.cert_path }}"
         if($certificatePath) {
           Write-Host "Using certificate file: '$certificatePath'"
@@ -79,13 +74,54 @@ runs:
             throw "Specified certificate file $certificatePath does not exist."
           }
         } else {
-          No certificate file provided, using base64 certificate data."
+          Write-Host "No certificate file provided, using base64 certificate data."
+
           $certBase64 = "${{ inputs.cert_base64 }}"
           if(!$certBase64) {
             throw "No certificate data provided."
           }
+
           $certBytes = [System.Convert]::FromBase64String($certBase64)
           $certificatePath = Join-Path $env:RUNNER_TEMP 'code-signing-certificate.pfx'
           [System.IO.File]::WriteAllBytes($certificatePath, $certBytes)
         }
         Write-Host "Using certificate $certificatePath for binary signing"
+
+        if($folder) {
+          $folderExists = Test-Path -Path $folder
+          if (!$folderExists) {
+            throw "Specified folder '$folder' does not exist."
+          } else {
+            Set-Location -Path $folder
+            Write-Host "'$folder' found."
+            $currentFolder = Get-Location
+            Write-Host "current folder: '$currentFolder'"
+          }
+        }
+
+        $pathGlobs = '${{ inputs.sign_globs }}' -Split ','
+        $pathGlobsCount = $pathGlobs.Count
+        Write-Host "'$pathGlobsCount' total glob paths to process."
+
+        if($pathGlobsCount -eq 0) {
+          throw "No paths found"
+        }
+
+        $signCertificate = Get-PfxCertificate -FilePath $certificatePath -Password (ConvertTo-SecureString -String ${{ inputs.cert_password }} -AsPlainText -Force)
+
+        foreach ($pathGlob in $pathGlobsCount) {
+          Write-Host "Found: '$pathGlob'"
+          if($recursive) {
+            $foundPaths = Get-ChildItem -Path "$pathGlob" -Verbose -Recurse
+            Write-Host "path: '$foundPaths'"
+          } else {
+            $foundPaths = Get-ChildItem -Path "$pathGlob" -Verbose
+            Write-Host "path: '$foundPaths'"
+          }
+          $foundPathsCount = $foundPaths.Count
+          Write-Host "count: '$foundPathsCount'"
+          foreach($foundPath in $foundPaths) {
+            Write-Host "Sign: '$($foundPath.FullName)'"
+            Set-AuthenticodeSignature -Certificate $signCertificate -FilePath "$($foundPath.FullName)" -IncludeChain All -TimestampServer $timestamp_server -HashAlgorithm $hash -Force -Verbose
+          }
+        }
