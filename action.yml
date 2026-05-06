@@ -115,7 +115,7 @@ runs:
         $signCertificate = Get-PfxCertificate -FilePath "$certificatePath" -Password (ConvertTo-SecureString -String ${{ inputs.cert_password }} -AsPlainText -Force)
 
         foreach ($pathGlob in $pathGlobsCount) {
-          Write-Host "Analysing found files for path '$pathGlob'"
+          Write-Host "Found: $pathGlob"
           if($recursive) {
             $foundPaths = Get-ChildItem -Path "$pathGlob" -Verbose -Recurse
             Write-Host "path: $foundPaths"
@@ -125,9 +125,10 @@ runs:
             Write-Host "path: $foundPaths"
           }
           $foundPathsCount = $foundPaths.Count
-          Write-Host "$foundPathsCount paths found."
-          foreach($foundPath in $foundPaths){
+          Write-Host "count: $foundPathsCount"
+          foreach($foundPath in $foundPaths) {
             Write-Host "sign: $foundPath.FullName"
+            Write-Host "Set-AuthenticodeSignature -Certificate $signCertificate -FilePath $($foundPath.FullName) -IncludeChain All -TimestampServer $timestamp_server -HashAlgorithm $hash -Force -Verbose"
             Set-AuthenticodeSignature -Certificate $signCertificate -FilePath "$($foundPath.FullName)" -IncludeChain All -TimestampServer $timestamp_server -HashAlgorithm $hash -Force -Verbose
           }
         }
