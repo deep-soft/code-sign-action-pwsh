@@ -20,6 +20,10 @@ inputs:
     description: Change to folder before sign files, globs relative to the folder
     required: false
     default: ""
+  recursive:
+    description: 'Recursively search for supported files.'
+    required: false
+    default: false
   sign_globs:
     description: Paths (globs) of the files to sign (comma-separated)
     required: true
@@ -39,6 +43,7 @@ runs:
     - name: Import PowerShell Module
       shell: pwsh
       run: |
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::TLS12
         Install-Module -Name 'Microsoft.PowerShell.Security' -Force -AllowClobber -Scope CurrentUser -Verbose
         Import-Module -Name 'Microsoft.PowerShell.Security' -Verbose
 
@@ -84,7 +89,12 @@ runs:
 
         foreach ($pathGlob in $pathGlobsCount) {
           Write-Host "Analysing found files for path '$pathGlob'"
-          $foundPaths = Get-ChildItem -Path "$pathGlob" -Verbose -Recurse
+          if($recursive) {
+            $foundPaths = Get-ChildItem -Path "$pathGlob" -Verbose -Recurse
+          } else
+          {
+            $foundPaths = Get-ChildItem -Path "$pathGlob" -Verbose
+          }
           $foundPathsCount = $foundPaths.Count
           Write-Host "$foundPathsCount paths found."
           Write-Host "$foundPaths"
