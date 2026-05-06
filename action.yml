@@ -126,7 +126,7 @@ runs:
           } else
           {
             $foundPaths = Get-ChildItem -Path "$pathGlob" -Verbose
-            Write-Host "path:$foundPaths:"
+            Write-Host "path: $foundPaths"
           }
           $foundPathsCount = $foundPaths.Count
           Write-Host "$foundPathsCount paths found."
