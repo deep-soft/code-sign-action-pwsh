@@ -74,7 +74,7 @@ runs:
         
         $certificatePath = "${{ inputs.cert_path }}"
         if($certificatePath) {
-          Write-Host "Using certificate file: $certificatePath"
+          Write-Host "Using certificate file: '$certificatePath'"
           $certificateExists = Test-Path -Path $certificatePath
           if (!$certificateExists) {
             throw "Specified certificate file $certificatePath does not exist."
@@ -98,15 +98,15 @@ runs:
           } else
           {
             Set-Location -Path $folder
-            Write-Host "$folder found."
+            Write-Host "'$folder' found."
             $currentFolder = Get-Location
-            Write-Host "current folder: $currentFolder"
+            Write-Host "current folder: '$currentFolder'"
           }
         }
 
         $pathGlobs = '${{ inputs.sign_globs }}' -Split ','
         $pathGlobsCount = $pathGlobs.Count
-        Write-Host "$pathGlobsCount total glob paths to process."
+        Write-Host "'$pathGlobsCount' total glob paths to process."
 
         if($pathGlobsCount -eq 0) {
           throw "No paths found"
@@ -115,17 +115,17 @@ runs:
         $signCertificate = Get-PfxCertificate -FilePath $certificatePath -Password (ConvertTo-SecureString -String ${{ inputs.cert_password }} -AsPlainText -Force)
 
         foreach ($pathGlob in $pathGlobsCount) {
-          Write-Host "Found: $pathGlob"
+          Write-Host "Found: '$pathGlob'"
           if($recursive) {
             $foundPaths = Get-ChildItem -Path "$pathGlob" -Verbose -Recurse
-            Write-Host "path: $foundPaths"
+            Write-Host "path: '$foundPaths'"
           } else
           {
             $foundPaths = Get-ChildItem -Path "$pathGlob" -Verbose
-            Write-Host "path: $foundPaths"
+            Write-Host "path: '$foundPaths'"
           }
           $foundPathsCount = $foundPaths.Count
-          Write-Host "count: $foundPathsCount"
+          Write-Host "count: '$foundPathsCount'"
           foreach($foundPath in $foundPaths) {
             Set-AuthenticodeSignature -Certificate $signCertificate -FilePath $($foundPath.FullName) -IncludeChain All -TimestampServer $timestamp_server -HashAlgorithm $hash -Force -Verbose
           }
