@@ -40,11 +40,15 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Import PowerShell Module
+    - name: Install PowerShell Module Microsoft.PowerShell.Security
+      continue-on-error: true
       shell: pwsh
       run: |
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::TLS12
-        Install-Module -Name 'Microsoft.PowerShell.Security' -Force -AllowClobber -Scope CurrentUser -Verbose
+        Install-Module -Name 'Microsoft.PowerShell.Security' -Force -AllowClobber -Scope CurrentUser -Verbose -Repository https://www.nuget.org/packages/Microsoft.PowerShell.Security/
+
+    - name: Import PowerShell Module Microsoft.PowerShell.Security
+      shell: pwsh
+      run: |
         Import-Module -Name 'Microsoft.PowerShell.Security' -Verbose
 
     - name: Sign Files
