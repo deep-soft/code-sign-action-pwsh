@@ -129,6 +129,6 @@ runs:
           foreach($foundPath in $foundPaths) {
             Write-Host "sign: $foundPath.FullName"
             Write-Host "Set-AuthenticodeSignature -Certificate $signCertificate -FilePath $($foundPath.FullName) -IncludeChain All -TimestampServer $timestamp_server -HashAlgorithm $hash -Force -Verbose"
-            Set-AuthenticodeSignature -Certificate $signCertificate -FilePath "$($foundPath.FullName)" -IncludeChain All -TimestampServer $timestamp_server -HashAlgorithm $hash -Force -Verbose
+            Set-AuthenticodeSignature -Certificate $signCertificate -FilePath $($foundPath.FullName) -IncludeChain All -TimestampServer $timestamp_server -HashAlgorithm $hash -Force -Verbose
           }
         }
