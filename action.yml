@@ -71,7 +71,6 @@ runs:
         $recursive        = "${{ inputs.recursive        }}"
         $hash             = "${{ inputs.hash             }}"
         $timestamp_server = "${{ inputs.timestamp_server }}"
-        
         $certificatePath = "${{ inputs.cert_path }}"
         if($certificatePath) {
           Write-Host "Using certificate file: '$certificatePath'"
@@ -90,27 +89,3 @@ runs:
           [System.IO.File]::WriteAllBytes($certificatePath, $certBytes)
         }
         Write-Host "Using certificate $certificatePath for binary signing"
-
-        if($folder) {
-          $folderExists = Test-Path -Path $folder
-          if (!$folderExists) {
-            throw "Specified folder '$folder' does not exist."
-          } else
-          {
-            Set-Location -Path $folder
-            Write-Host "'$folder' found."
-            $currentFolder = Get-Location
-            Write-Host "current folder: '$currentFolder'"
-          }
-        }
-
-        $pathGlobs = '${{ inputs.sign_globs }}' -Split ','
-        $pathGlobsCount = $pathGlobs.Count
-        Write-Host "'$pathGlobsCount' total glob paths to process."
-
-        if($pathGlobsCount -eq 0) {
-          throw "No paths found"
-        }
-
-        $signCertificate = Get-PfxCertificate -FilePath $certificatePath -Password (ConvertTo-SecureString -String ${{ inputs.cert_password }} -AsPlainText -Force)
-
