@@ -22,6 +22,7 @@ inputs:
     default: ""
   recursive:
     description: 'Recursively search for supported files.'
+    type: boolean
     required: false
     default: false
   sign_globs:
@@ -40,6 +41,12 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: inputs
+      shell: pwsh
+      run: |
+        Write-Host "folder: '$folder"
+        Write-Host "hash: '$hash"
+        Write-Host "recursive: '$recursive"
     - name: Install PowerShell Module Microsoft.PowerShell.Security
       continue-on-error: true
       shell: pwsh
@@ -62,7 +69,7 @@ runs:
             throw "Specified certificate file '$certificatePath' does not exist."
           }
         } else {
-          Write-Host "No certificate file provided, using base64 certificate data."
+          No certificate file provided, using base64 certificate data."
           $certBase64 = "${{ inputs.cert_base64 }}"
           if(!$certBase64) {
             throw "No certificate data provided."
