@@ -44,19 +44,14 @@ runs:
     - name: print inputs (1)
       shell: pwsh
       run: |
-        $folder    = "${{ inputs.folder    }}"
-        $recursive = "${{ inputs.recursive }}"
-        $hash      = "${{ inputs.hash      }}"
-        Write-Host "folder:    $folder"
-        Write-Host "hash:      $hash"
-        Write-Host "recursive: $recursive"
-
-    - name: print inputs (2)
-      shell: pwsh
-      run: |
-        Write-Host "folder:    $folder"
-        Write-Host "hash:      $hash"
-        Write-Host "recursive: $recursive"
+        $folder           = "${{ inputs.folder           }}"
+        $recursive        = "${{ inputs.recursive        }}"
+        $hash             = "${{ inputs.hash             }}"
+        $timestamp_server = "${{ inputs.timestamp_server }}"
+        Write-Host "folder           = $folder"
+        Write-Host "hash             = $hash"
+        Write-Host "recursive        = $recursive"
+        Write-Host "timestamp_server = $timestamp_server"
 
 #    - name: Install PowerShell Module Microsoft.PowerShell.Security
 #      continue-on-error: true
@@ -72,9 +67,10 @@ runs:
     - name: Sign Files
       shell: pwsh
       run: |
-        $folder    = "${{ inputs.folder    }}"
-        $recursive = "${{ inputs.recursive }}"
-        $hash      = "${{ inputs.hash      }}"
+        $folder           = "${{ inputs.folder           }}"
+        $recursive        = "${{ inputs.recursive        }}"
+        $hash             = "${{ inputs.hash             }}"
+        $timestamp_server = "${{ inputs.timestamp_server }}"
         
         $certificatePath = "${{ inputs.cert_path }}"
         if($certificatePath) {
@@ -130,9 +126,8 @@ runs:
           }
           $foundPathsCount = $foundPaths.Count
           Write-Host "$foundPathsCount paths found."
-          Write-Host "path: $foundPaths"
           foreach($foundPath in $foundPaths){
-            Write-Host "Running sign operation against: '$($foundPath.FullName)'"
-            Set-AuthenticodeSignature -Certificate $signCertificate -FilePath "$($foundPath.FullName)" -IncludeChain All -TimestampServer ${{ inputs.timestamp_server }} -HashAlgorithm ${{ inputs.hash }} -Force -Verbose
+            Write-Host "sign: $foundPath.FullName"
+            Set-AuthenticodeSignature -Certificate $signCertificate -FilePath "$($foundPath.FullName)" -IncludeChain All -TimestampServer $timestamp_server -HashAlgorithm $hash -Force -Verbose
           }
         }
